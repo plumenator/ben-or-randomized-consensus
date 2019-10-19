@@ -1,5 +1,5 @@
 [package]
-name = "perlin-challenge"
+name = "ben-or-randomized-consensus"
 version = "0.1.0"
 authors = ["Karthik Ravikanti <karthik.ravikanti@gmail.com>"]
 edition = "2018"
