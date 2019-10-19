@@ -1,4 +1,4 @@
-use std::iter;
+use std::{fmt, iter};
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum Message {
@@ -32,6 +32,15 @@ fn count_from(init: u64) -> impl Iterator<Item = u64> {
 pub(crate) enum Value {
     One,
     Zero,
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::One => write!(f, "1",),
+            Value::Zero => write!(f, "0",),
+        }
+    }
 }
 
 #[cfg(test)]
