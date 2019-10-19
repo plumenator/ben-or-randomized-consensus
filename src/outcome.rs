@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::message::{Phase, Value};
 
 #[derive(Debug, PartialEq)]
@@ -33,6 +35,21 @@ impl Outcome {
         })
     }
 }
+
+impl fmt::Display for Outcome {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Outcome { phase, decision } = self;
+        match decision {
+            Decision::Done { next, decided } => write!(
+                f,
+                "(Phase: {}, Next: {}, Decide: {})",
+                phase.0, next, decided
+            ),
+            Decision::Pending { next } => write!(f, "(Phase: {}, Next: {})", phase.0, next),
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Decision {
     Done { next: Value, decided: Value },
