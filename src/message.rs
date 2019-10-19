@@ -1,10 +1,9 @@
 use std::iter;
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Message {
-    kind: MessageKind,
-    phase: Phase,
-    value: Option<Value>,
+pub(crate) enum Message {
+    Proposal { phase: Phase, value: Option<Value> },
+    Report { phase: Phase, value: Value },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -35,12 +34,6 @@ pub(crate) enum Value {
     Zero,
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum MessageKind {
-    Report,
-    Proposal,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,27 +41,33 @@ mod tests {
     #[test]
     fn equality() {
         assert_eq!(
-            Message {
-                kind: MessageKind::Proposal,
+            Message::Proposal {
                 phase: Phase(56),
                 value: Some(Value::One)
             },
-            Message {
-                kind: MessageKind::Proposal,
+            Message::Proposal {
                 phase: Phase(56),
                 value: Some(Value::One)
             }
         );
+        assert_eq!(
+            Message::Report {
+                phase: Phase(56),
+                value: Value::One
+            },
+            Message::Report {
+                phase: Phase(56),
+                value: Value::One
+            }
+        );
         assert_ne!(
-            Message {
-                kind: MessageKind::Proposal,
+            Message::Proposal {
                 phase: Phase(56),
                 value: Some(Value::Zero)
             },
-            Message {
-                kind: MessageKind::Report,
+            Message::Report {
                 phase: Phase(56),
-                value: Some(Value::One)
+                value: Value::One
             }
         );
     }
