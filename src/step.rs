@@ -51,7 +51,7 @@ impl fmt::Display for Behavior {
 }
 
 impl FromStr for Behavior {
-    type Err = String;
+    type Err = &'static str;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -60,7 +60,7 @@ impl FromStr for Behavior {
             "sends_invalid_messages" => Ok(Behavior::SendsInvalidMessages),
             "stops_executing" => Ok(Behavior::StopsExecuting),
             "randomly_adversial" => Ok(Behavior::RandomlyAdversial),
-            _ => Err(String::from("invalid behavior string")),
+            _ => Err("invalid behavior string"),
         }
     }
 }
