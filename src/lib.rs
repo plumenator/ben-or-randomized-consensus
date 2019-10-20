@@ -4,6 +4,7 @@ mod message;
 mod outcome;
 mod process;
 mod step;
+mod transport;
 
 use crate::{
     message::Value,
