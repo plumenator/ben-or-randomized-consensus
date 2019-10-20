@@ -50,7 +50,6 @@ Process 9: outcome: (Phase: 10, Next: 0)
 Remaining Work
 --------------
 1. Refactor `step::correct()` so that it does not always choose the decided value for the next phase
-1. Binary (de)serialization
 1. Adverserial strategy for sending random bytes
 1. Implement TCP transport
 1. Read the args from a config file
