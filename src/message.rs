@@ -1,12 +1,12 @@
 use std::{fmt, iter};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Message {
     Proposal { phase: Phase, value: Option<Value> },
     Report { phase: Phase, value: Value },
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub(crate) struct Phase(pub(crate) u64);
 
 impl Phase {
