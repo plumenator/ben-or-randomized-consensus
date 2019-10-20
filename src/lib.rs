@@ -11,10 +11,13 @@ use crate::{
     process::{Id, Process},
 };
 
+pub use crate::step::Behavior;
+
 pub fn simulate(
     num_processes: usize,
-    num_adversaries: usize,
     num_zeros: usize,
+    num_adversaries: usize,
+    adversial_behavior: Behavior,
 ) -> impl Iterator<Item = (Id, Outcome)> {
     let mut senders = vec![];
     let mut receivers = vec![];
@@ -40,9 +43,14 @@ pub fn simulate(
         } else {
             Value::One
         };
+        let step_fn = if process.id.0 < num_adversaries {
+            adversial_behavior.step_fn()
+        } else {
+            Behavior::Correct.step_fn()
+        };
         let _ = std::thread::spawn(move || {
-            for (id, outcome) in process.run(init, step::correct, num_adversaries) {
-                sender.send((id, outcome)).expect("send");
+            for (id, outcome) in process.run(init, step_fn, num_adversaries) {
+                sender.send((id, outcome)).expect("send outcome");
             }
         });
     }

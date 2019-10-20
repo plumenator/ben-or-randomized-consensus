@@ -49,8 +49,3 @@ impl Process {
         .map(move |outcome| (id.clone(), outcome))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-}
