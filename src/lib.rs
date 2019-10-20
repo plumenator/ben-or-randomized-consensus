@@ -10,25 +10,26 @@ use crate::{
     message::Value,
     outcome::Outcome,
     process::{Id, Process},
-    transport::Transport,
 };
 
 pub use crate::step::Behavior;
+pub use crate::transport::{Channel, Transport};
 
-pub fn simulate(
-    num_processes: usize,
+pub fn simulate<T: Transport + 'static>(
     num_zeros: usize,
     num_adversaries: usize,
     adversial_behavior: Behavior,
+    transports: Vec<T>,
 ) -> impl Iterator<Item = (Id, Outcome)> {
     let mut processes = vec![];
-    for (i, transport) in Transport::new(num_processes).into_iter().enumerate() {
+    for (i, transport) in transports.into_iter().enumerate() {
         processes.push(Process {
             id: Id(i),
             transport,
         })
     }
     let (sender, receiver) = std::sync::mpsc::channel();
+    let num_processes = processes.len();
     for process in processes {
         let sender = sender.clone();
         assert!(num_zeros <= num_processes);

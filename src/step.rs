@@ -15,7 +15,9 @@ pub enum Behavior {
 }
 
 impl Behavior {
-    pub(crate) fn step_fn(&self) -> impl Fn(&Context, Phase, Value, usize) -> Decision {
+    pub(crate) fn step_fn<T: Transport>(
+        &self,
+    ) -> impl Fn(&Context<T>, Phase, Value, usize) -> Decision {
         match self {
             Behavior::Correct => correct,
             Behavior::Crashes => randomly_crashes,
@@ -63,8 +65,8 @@ impl FromStr for Behavior {
     }
 }
 
-fn correct(
-    context: &Context,
+fn correct<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -91,7 +93,7 @@ fn correct(
         current_phase.0,
         num_processes - num_adversaries
     );
-    let (ones, zeros) = read_values(&transport, num_processes - num_adversaries, |message| {
+    let (ones, zeros) = read_values(transport, num_processes - num_adversaries, |message| {
         eprintln!("Process {}: Received {:?}", id.0, message);
         match &message {
             Message::Report { phase, value } => {
@@ -157,7 +159,7 @@ fn correct(
         current_phase.0,
         num_processes - num_adversaries
     );
-    let (ones, zeros) = read_values(&transport, num_processes - num_adversaries, |message| {
+    let (ones, zeros) = read_values(transport, num_processes - num_adversaries, |message| {
         eprintln!("Process {}: Received {:?}", id.0, message);
         match &message {
             Message::Proposal { phase, value } => {
@@ -236,7 +238,7 @@ fn correct(
 }
 
 fn read_values(
-    transport: &Transport,
+    transport: &impl Transport,
     take: usize,
     filter_map_fn: impl Fn(Message) -> Option<Option<Value>>,
 ) -> (Vec<Value>, Vec<Value>) {
@@ -257,8 +259,8 @@ fn read_values(
     (ones, zeros)
 }
 
-fn randomly_crashes(
-    context: &Context,
+fn randomly_crashes<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -270,8 +272,8 @@ fn randomly_crashes(
     }
 }
 
-fn randomly_sends_invalid_messages(
-    context: &Context,
+fn randomly_sends_invalid_messages<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -301,8 +303,8 @@ fn randomly_sends_invalid_messages(
     }
 }
 
-fn randomly_stops_executing(
-    context: &Context,
+fn randomly_stops_executing<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,

@@ -6,9 +6,9 @@ use crate::{
     transport::Transport,
 };
 
-pub(crate) struct Process {
+pub(crate) struct Process<T: Transport> {
     pub(crate) id: Id,
-    pub(crate) transport: Transport,
+    pub(crate) transport: T,
 }
 
 #[derive(Clone)]
@@ -20,11 +20,11 @@ impl fmt::Display for Id {
     }
 }
 
-impl Process {
+impl<T: Transport> Process<T> {
     pub(crate) fn run(
         self,
         init: Value,
-        step_fn: impl Fn(&Context, Phase, Value, usize) -> Decision,
+        step_fn: impl Fn(&Context<T>, Phase, Value, usize) -> Decision,
         num_adversaries: usize,
     ) -> impl Iterator<Item = (Id, Outcome)> {
         let Self { id, transport } = self;
