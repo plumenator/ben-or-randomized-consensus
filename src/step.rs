@@ -51,7 +51,8 @@ pub(crate) fn correct(
             }
             Message::Proposal { phase, value: _ } => {
                 if phase >= &current_phase {
-                    panic!("Process {}: skipped {:?}", id.0, message);
+                    senders[id.0].send(message.clone()).expect("send to self");
+                    eprintln!("Process {}: skipped {:?}", id.0, message);
                 } else {
                     eprintln!("Process {}: dropped {:?}", id.0, message);
                 }
@@ -122,7 +123,8 @@ pub(crate) fn correct(
             }
             Message::Report { phase, value: _ } => {
                 if phase > &current_phase {
-                    panic!("Process {}: skipped {:?}", id.0, message);
+                    senders[id.0].send(message.clone()).expect("send to self");
+                    eprintln!("Process {}: skipped {:?}", id.0, message);
                 } else {
                     eprintln!("Process {}: dropped {:?}", id.0, message);
                 }
@@ -188,7 +190,9 @@ pub(crate) fn correct(
 
 fn send(senders: &Vec<std::sync::mpsc::Sender<Message>>, message: Message) {
     for sender in senders {
-        let _ = sender.send(message.clone()).expect("send");
+        let _ = sender
+            .send(message.clone())
+            .map_err(|e| eprintln!("Failed to send {:?}", e.0));
     }
 }
 
@@ -212,4 +216,17 @@ fn read_values(
         }
     }
     (ones, zeros)
+}
+
+pub(crate) fn randomly_crashes(
+    context: &Context,
+    current_phase: Phase,
+    current_value: Value,
+    num_adversaries: usize,
+) -> Decision {
+    if rand::random::<u64>() % (current_phase.0 + 2) == 0 {
+        panic!("Process {}: Crashing", context.id.0)
+    } else {
+        correct(context, current_phase, current_value, num_adversaries)
+    }
 }

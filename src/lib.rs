@@ -40,9 +40,14 @@ pub fn simulate(
         } else {
             Value::One
         };
+        let step_fn = if process.id.0 < num_adversaries {
+            step::randomly_crashes
+        } else {
+            step::correct
+        };
         let _ = std::thread::spawn(move || {
-            for (id, outcome) in process.run(init, step::correct, num_adversaries) {
-                sender.send((id, outcome)).expect("send");
+            for (id, outcome) in process.run(init, step_fn, num_adversaries) {
+                sender.send((id, outcome)).expect("send outcome");
             }
         });
     }
