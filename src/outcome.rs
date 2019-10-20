@@ -37,7 +37,9 @@ impl Outcome {
                     decided: prev_decided,
                 } => {
                     let decision = step_fn(&context, phase.next(), next, num_adversaries);
-                    assert_eq!(prev_decided, decision.decided().expect("has decided"));
+                    if let Some(decided) = decision.decided() {
+                        assert_eq!(prev_decided, decided);
+                    }
                     decision
                 }
                 Decision::Pending { next } => {
