@@ -23,8 +23,8 @@ Process 10: outcome: (Phase: 8, Next: 1, Decide: 1)
 Process 1: outcome: (Phase: 9, Next: 1, Decide: 1)
 ...
 ...
-$ # Simulate 11 nodes, half of them starting at 0, with 5 adversaries each with a random adverserial behavior
-$ ./target/debug/ben-or-randomized-consensus 11 5 5 random channel 2>/dev/null
+$ # Simulate 11 nodes, half of them starting at 0, with 5 (n/2) adversaries each with a random adverserial behavior
+$ ./target/debug/ben-or-randomized-consensus 11 5 5 randomly_adversial channel 2>/dev/null
 Process 0: outcome: (Phase: 0, Next: 0)
 Process 1: outcome: (Phase: 0, Next: 0)
 Process 2: outcome: (Phase: 0, Next: 0)
@@ -32,6 +32,17 @@ Process 2: outcome: (Phase: 0, Next: 0)
 ...
 Process 10: outcome: (Phase: 8, Next: 1, Decide: 1)
 Process 0: outcome: (Phase: 9, Next: 1, Decide: 1)
+...
+...
+$ # Simulate 11 nodes, half of them starting at 0, with 6 (> n/2) adversaries each with a random adverserial behavior
+$ ./target/debug/ben-or-randomized-consensus 11 6 6 randomly_adversial channel 2>/dev/null
+Process 1: outcome: (Phase: 0, Next: 0)
+Process 4: outcome: (Phase: 0, Next: 0)
+Process 1: outcome: (Phase: 1, Next: 0)
+...
+...
+Process 8: outcome: (Phase: 10, Next: 1)
+Process 9: outcome: (Phase: 10, Next: 0)
 ...
 ...
 ```
@@ -47,3 +58,7 @@ Remaining Work
 1. Use `tokio` for lightweight async tasks instead of threads
 1. ncurses based frontend to show the process states
 1. Return `Result` fallible functions instead of logging and ignoring errors
+
+Reference
+---------
+"Correctness Proof of Ben-Or’s Randomized Consensus Algorithm" by Marcos Kawazoe Aguilera, Sam Toueg ([link](http://disi.unitn.it/~montreso/ds/syllabus/papers/AguileraToeug-CorrecnessBenOr.pdf))
