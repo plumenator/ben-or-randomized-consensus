@@ -1,13 +1,13 @@
 use std::{fmt, iter};
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) enum Message {
+pub enum Message {
     Proposal { phase: Phase, value: Option<Value> },
     Report { phase: Phase, value: Value },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub(crate) struct Phase(pub(crate) u64);
+pub struct Phase(pub(crate) u64);
 
 impl Phase {
     pub(crate) fn next(self) -> Self {
@@ -29,7 +29,7 @@ fn count_from(init: u64) -> impl Iterator<Item = u64> {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) enum Value {
+pub enum Value {
     One,
     Zero,
 }

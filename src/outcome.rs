@@ -1,14 +1,13 @@
-use std::{
-    fmt,
-    sync::mpsc::{Receiver, Sender},
+use std::fmt;
+
+use crate::{
+    message::{Phase, Value},
+    transport::Transport,
 };
 
-use crate::message::{Message, Phase, Value};
-
-pub(crate) struct Context {
+pub(crate) struct Context<T: Transport> {
     pub(crate) id: ProcessId,
-    pub(crate) senders: Vec<Sender<Message>>,
-    pub(crate) receiver: Receiver<Message>,
+    pub(crate) transport: T,
 }
 
 #[derive(Clone)]
@@ -21,11 +20,11 @@ pub struct Outcome {
 }
 
 impl Outcome {
-    pub(crate) fn generate(
+    pub(crate) fn generate<T: Transport>(
         init: Value,
         phases: impl Iterator<Item = Phase>,
-        step_fn: impl Fn(&Context, Phase, Value, usize) -> Decision,
-        context: Context,
+        step_fn: impl Fn(&Context<T>, Phase, Value, usize) -> Decision,
+        context: Context<T>,
         num_adversaries: usize,
     ) -> impl Iterator<Item = Self> {
         let mut current = Decision::Pending { next: init };
@@ -87,7 +86,9 @@ impl Decision {
 mod tests {
     use super::*;
 
-    fn step_fn(_context: &Context, phase: Phase, _value: Value, _: usize) -> Decision {
+    use crate::transport::Channel;
+
+    fn step_fn(_context: &Context<Channel>, phase: Phase, _value: Value, _: usize) -> Decision {
         let next = if phase.0 % 2 == 1 {
             Value::Zero
         } else {
@@ -111,8 +112,7 @@ mod tests {
             step_fn,
             Context {
                 id: ProcessId(0),
-                senders: vec![],
-                receiver: std::sync::mpsc::channel().1,
+                transport: Channel::new(1).remove(0),
             },
             0,
         )

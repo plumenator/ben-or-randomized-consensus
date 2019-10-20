@@ -3,6 +3,7 @@ use std::{fmt, str::FromStr};
 use crate::{
     message::{Message, Phase, Value},
     outcome::{Context, Decision},
+    transport::Transport,
 };
 
 pub enum Behavior {
@@ -14,7 +15,9 @@ pub enum Behavior {
 }
 
 impl Behavior {
-    pub(crate) fn step_fn(&self) -> impl Fn(&Context, Phase, Value, usize) -> Decision {
+    pub(crate) fn step_fn<T: Transport>(
+        &self,
+    ) -> impl Fn(&Context<T>, Phase, Value, usize) -> Decision {
         match self {
             Behavior::Correct => correct,
             Behavior::Crashes => randomly_crashes,
@@ -62,18 +65,14 @@ impl FromStr for Behavior {
     }
 }
 
-fn correct(
-    context: &Context,
+fn correct<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
 ) -> Decision {
-    let Context {
-        id,
-        senders,
-        receiver,
-    } = context;
-    let num_processes = senders.len();
+    let Context { id, transport } = context;
+    let num_processes = transport.num_senders();
     assert!(num_processes > num_adversaries);
 
     // send (R, k, x) to all processes
@@ -81,13 +80,10 @@ fn correct(
         "Process {}: send (R, {}, {}) to all processes",
         id.0, current_phase.0, current_value
     );
-    send(
-        &senders,
-        Message::Report {
-            phase: current_phase,
-            value: current_value.clone(),
-        },
-    );
+    transport.send(Message::Report {
+        phase: current_phase,
+        value: current_value.clone(),
+    });
 
     // wait for messages of the form (R, k, *) from n - f
     // processes {"*" can be 0 or 1}
@@ -97,7 +93,7 @@ fn correct(
         current_phase.0,
         num_processes - num_adversaries
     );
-    let (ones, zeros) = read_values(&receiver, num_processes - num_adversaries, |message| {
+    let (ones, zeros) = read_values(transport, num_processes - num_adversaries, |message| {
         eprintln!("Process {}: Received {:?}", id.0, message);
         match &message {
             Message::Report { phase, value } => {
@@ -110,7 +106,7 @@ fn correct(
             }
             Message::Proposal { phase, value: _ } => {
                 if phase >= &current_phase {
-                    senders[id.0].send(message.clone()).expect("send to self");
+                    transport.send_to_self(message.clone());
                     eprintln!("Process {}: skipped {:?}", id.0, message);
                 } else {
                     eprintln!("Process {}: dropped {:?}", id.0, message);
@@ -139,26 +135,20 @@ fn correct(
             "Process {}: then send (P, {}, {}) to all processes",
             id.0, current_phase.0, potential
         );
-        send(
-            &senders,
-            Message::Proposal {
-                phase: current_phase,
-                value: Some(potential.clone()),
-            },
-        );
+        transport.send(Message::Proposal {
+            phase: current_phase,
+            value: Some(potential.clone()),
+        });
     } else {
         // else send (P, k, ?) to all processes
         eprintln!(
             "Process {}: else send (P, {}, ?) to all processes",
             id.0, current_phase.0
         );
-        send(
-            &senders,
-            Message::Proposal {
-                phase: current_phase,
-                value: None,
-            },
-        );
+        transport.send(Message::Proposal {
+            phase: current_phase,
+            value: None,
+        });
     }
 
     // wait for messages of the form (P, k, *) from n - f
@@ -169,7 +159,7 @@ fn correct(
         current_phase.0,
         num_processes - num_adversaries
     );
-    let (ones, zeros) = read_values(&receiver, num_processes - num_adversaries, |message| {
+    let (ones, zeros) = read_values(transport, num_processes - num_adversaries, |message| {
         eprintln!("Process {}: Received {:?}", id.0, message);
         match &message {
             Message::Proposal { phase, value } => {
@@ -182,7 +172,7 @@ fn correct(
             }
             Message::Report { phase, value: _ } => {
                 if phase > &current_phase {
-                    senders[id.0].send(message.clone()).expect("send to self");
+                    transport.send_to_self(message.clone());
                     eprintln!("Process {}: skipped {:?}", id.0, message);
                 } else {
                     eprintln!("Process {}: dropped {:?}", id.0, message);
@@ -247,16 +237,8 @@ fn correct(
     }
 }
 
-fn send(senders: &Vec<std::sync::mpsc::Sender<Message>>, message: Message) {
-    for sender in senders {
-        let _ = sender
-            .send(message.clone())
-            .map_err(|e| eprintln!("Failed to send {:?}", e.0));
-    }
-}
-
 fn read_values(
-    receiver: &std::sync::mpsc::Receiver<Message>,
+    transport: &impl Transport,
     take: usize,
     filter_map_fn: impl Fn(Message) -> Option<Option<Value>>,
 ) -> (Vec<Value>, Vec<Value>) {
@@ -264,7 +246,7 @@ fn read_values(
     let mut zeros = vec![];
     let mut count: usize = 0;
     while count < take {
-        let message = receiver.recv().expect("recv");
+        let message = transport.receive();
         if let Some(value) = filter_map_fn(message) {
             count = count + 1;
             if let Some(Value::One) = value {
@@ -277,8 +259,8 @@ fn read_values(
     (ones, zeros)
 }
 
-fn randomly_crashes(
-    context: &Context,
+fn randomly_crashes<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -290,31 +272,28 @@ fn randomly_crashes(
     }
 }
 
-fn randomly_sends_invalid_messages(
-    context: &Context,
+fn randomly_sends_invalid_messages<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
 ) -> Decision {
     if rand::random::<bool>() {
-        send(
-            &context.senders,
-            if rand::random::<bool>() {
-                Message::Proposal {
-                    phase: current_phase,
-                    value: if rand::random::<bool>() {
-                        Some(current_value.clone())
-                    } else {
-                        None
-                    },
-                }
-            } else {
-                Message::Report {
-                    phase: current_phase,
-                    value: current_value.clone(),
-                }
-            },
-        );
+        context.transport.send(if rand::random::<bool>() {
+            Message::Proposal {
+                phase: current_phase,
+                value: if rand::random::<bool>() {
+                    Some(current_value.clone())
+                } else {
+                    None
+                },
+            }
+        } else {
+            Message::Report {
+                phase: current_phase,
+                value: current_value.clone(),
+            }
+        });
         eprintln!("Process {}: Sent random messages", context.id.0);
         Decision::Pending {
             next: current_value,
@@ -324,8 +303,8 @@ fn randomly_sends_invalid_messages(
     }
 }
 
-fn randomly_stops_executing(
-    context: &Context,
+fn randomly_stops_executing<T: Transport>(
+    context: &Context<T>,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
