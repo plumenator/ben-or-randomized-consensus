@@ -34,6 +34,7 @@ pub fn simulate(
     let (sender, receiver) = std::sync::mpsc::channel();
     for process in processes {
         let sender = sender.clone();
+        assert!(num_zeros <= num_processes);
         let init = if process.id.0 < num_zeros {
             Value::Zero
         } else {
