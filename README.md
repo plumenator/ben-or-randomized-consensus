@@ -47,3 +47,7 @@ Remaining Work
 1. Use `tokio` for lightweight async tasks instead of threads
 1. ncurses based frontend to show the process states
 1. Return `Result` fallible functions instead of logging and ignoring errors
+
+Reference
+---------
+"Correctness Proof of Ben-Or’s Randomized Consensus Algorithm" by Marcos Kawazoe Aguilera, Sam Toueg ([link](http://disi.unitn.it/~montreso/ds/syllabus/papers/AguileraToeug-CorrecnessBenOr.pdf))
