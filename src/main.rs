@@ -19,7 +19,7 @@ fn main() {
         Err(e) => {
             eprintln!("Error parsing args: {}", e);
             eprintln!(
-                "Usage: {} <number of nodes> <number of zeros> <number of adversaries> <behavior> <transport type",
+                "Usage: {} <number of nodes> <number of zeros> <number of adversaries> <behavior> <transport type>",
                 bin_name
             );
             eprintln!(
@@ -31,8 +31,8 @@ fn main() {
 }
 
 fn parse(args: Vec<String>) -> Result<(usize, usize, usize, Behavior, String), String> {
-    if args.len() != 4 {
-        return Err(String::from("need 5 args"));
+    if args.len() != 5 {
+        return Err(String::from("need exactly 5 args"));
     }
 
     let parse_usize = |s: &str| s.parse().map_err(|e| format!("{}", e));
