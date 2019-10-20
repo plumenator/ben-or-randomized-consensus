@@ -19,7 +19,7 @@ fn main() {
         Err(e) => {
             eprintln!("Error parsing args: {}", e);
             eprintln!(
-                "Usage: {} <number of nodes> <number of zeros> <number of adversaries> <behavior> <transport type",
+                "Usage: {} <number of nodes> <number of zeros> <number of adversaries> <behavior> <transport type>",
                 bin_name
             );
             eprintln!(
