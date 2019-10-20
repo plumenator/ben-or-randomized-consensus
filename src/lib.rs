@@ -13,7 +13,7 @@ use crate::{
 };
 
 pub use crate::step::Behavior;
-pub use crate::transport::{Channel, Transport};
+pub use crate::transport::{MessageChannel, Transport};
 
 pub fn simulate<T: Transport + 'static>(
     num_zeros: usize,

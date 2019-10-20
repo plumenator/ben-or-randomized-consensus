@@ -1,6 +1,6 @@
 use std::env;
 
-use ben_or_randomized_consensus::{simulate, Behavior, Channel, Transport};
+use ben_or_randomized_consensus::{simulate, Behavior, MessageChannel, Transport};
 
 fn main() {
     let mut args: Vec<String> = env::args().collect();
@@ -25,7 +25,7 @@ fn main() {
             eprintln!(
                 "behavior: correct|crashes|sends_invalid_messages|stops_executing|randomly_adversial",
             );
-            eprintln!("transport type: channel",);
+            eprintln!("transport type: message_channel",);
         }
     }
 }
@@ -47,7 +47,7 @@ fn parse(args: Vec<String>) -> Result<(usize, usize, usize, Behavior, String), S
 
 fn transport(transport_type: &str, num_processes: usize) -> Vec<impl Transport> {
     match transport_type {
-        "channel" => Channel::new(num_processes),
+        "message_channel" => MessageChannel::new(num_processes),
         _ => panic!("invalid transport type string"),
     }
 }

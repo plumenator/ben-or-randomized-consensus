@@ -11,13 +11,13 @@ pub trait Transport: Send + Sized {
     fn receive(&self) -> Message;
 }
 
-pub struct Channel {
+pub struct MessageChannel {
     self_sender: Sender<Message>,
     senders: Vec<Sender<Message>>,
     receiver: Receiver<Message>,
 }
 
-impl Transport for Channel {
+impl Transport for MessageChannel {
     type Wire = Message;
 
     fn new(num_processes: usize) -> Vec<Self> {
@@ -31,7 +31,7 @@ impl Transport for Channel {
         receivers
             .into_iter()
             .enumerate()
-            .map(|(i, receiver)| Channel {
+            .map(|(i, receiver)| MessageChannel {
                 self_sender: senders[i].clone(),
                 senders: senders.clone(),
                 receiver: receiver,

@@ -86,9 +86,14 @@ impl Decision {
 mod tests {
     use super::*;
 
-    use crate::transport::Channel;
+    use crate::transport::MessageChannel;
 
-    fn step_fn(_context: &Context<Channel>, phase: Phase, _value: Value, _: usize) -> Decision {
+    fn step_fn(
+        _context: &Context<MessageChannel>,
+        phase: Phase,
+        _value: Value,
+        _: usize,
+    ) -> Decision {
         let next = if phase.0 % 2 == 1 {
             Value::Zero
         } else {
@@ -112,7 +117,7 @@ mod tests {
             step_fn,
             Context {
                 id: ProcessId(0),
-                transport: Channel::new(1).remove(0),
+                transport: MessageChannel::new(1).remove(0),
             },
             0,
         )
