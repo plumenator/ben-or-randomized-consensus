@@ -23,7 +23,7 @@ Process 10: outcome: (Phase: 8, Next: 1, Decide: 1)
 Process 1: outcome: (Phase: 9, Next: 1, Decide: 1)
 ...
 ...
-$ # Simulate 11 nodes, half of them starting at 0, with 5 adversaries each with a random adverserial behavior
+$ # Simulate 11 nodes, half of them starting at 0, with 5 (n/2) adversaries each with a random adverserial behavior
 $ ./target/debug/ben-or-randomized-consensus 11 5 5 randomly_adversial channel 2>/dev/null
 Process 0: outcome: (Phase: 0, Next: 0)
 Process 1: outcome: (Phase: 0, Next: 0)
