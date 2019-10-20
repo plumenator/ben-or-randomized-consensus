@@ -1,6 +1,18 @@
-use std::fmt;
+use std::{
+    fmt,
+    sync::mpsc::{Receiver, Sender},
+};
 
-use crate::message::{Phase, Value};
+use crate::message::{Message, Phase, Value};
+
+pub(crate) struct Context {
+    pub(crate) id: ProcessId,
+    pub(crate) senders: Vec<Sender<Message>>,
+    pub(crate) receiver: Receiver<Message>,
+}
+
+#[derive(Clone)]
+pub(crate) struct ProcessId(pub(crate) usize);
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct Outcome {
@@ -12,7 +24,9 @@ impl Outcome {
     pub(crate) fn generate(
         init: Value,
         phases: impl Iterator<Item = Phase>,
-        step_fn: impl Fn(Phase, Value) -> Decision,
+        step_fn: impl Fn(&Context, Phase, Value, usize) -> Decision,
+        context: Context,
+        num_adversaries: usize,
     ) -> impl Iterator<Item = Self> {
         let mut current = Decision::Pending { next: init };
         phases.map(move |phase| {
@@ -22,11 +36,13 @@ impl Outcome {
                     next,
                     decided: prev_decided,
                 } => {
-                    let decision = step_fn(phase.next(), next);
+                    let decision = step_fn(&context, phase.next(), next, num_adversaries);
                     assert_eq!(prev_decided, decision.decided().expect("has decided"));
                     decision
                 }
-                Decision::Pending { next } => step_fn(phase.next(), next),
+                Decision::Pending { next } => {
+                    step_fn(&context, phase.next(), next, num_adversaries)
+                }
             };
             Outcome {
                 phase,
@@ -69,25 +85,36 @@ impl Decision {
 mod tests {
     use super::*;
 
+    fn step_fn(_context: &Context, phase: Phase, _value: Value, _: usize) -> Decision {
+        let next = if phase.0 % 2 == 1 {
+            Value::Zero
+        } else {
+            Value::One
+        };
+        if phase.0 >= 4 {
+            Decision::Done {
+                next,
+                decided: Value::Zero,
+            }
+        } else {
+            Decision::Pending { next }
+        }
+    }
+
     #[test]
     fn outcome_generate_works() {
-        let step = |phase: Phase, _value| -> Decision {
-            let next = if phase.0 % 2 == 1 {
-                Value::Zero
-            } else {
-                Value::One
-            };
-            if phase.0 >= 4 {
-                Decision::Done {
-                    next,
-                    decided: Value::Zero,
-                }
-            } else {
-                Decision::Pending { next }
-            }
-        };
-
-        let mut it = Outcome::generate(Value::Zero, Phase::generate(), step).take(6);
+        let mut it = Outcome::generate(
+            Value::Zero,
+            Phase::generate(),
+            step_fn,
+            Context {
+                id: ProcessId(0),
+                senders: vec![],
+                receiver: std::sync::mpsc::channel().1,
+            },
+            0,
+        )
+        .take(6);
         assert_eq!(
             it.next(),
             Some(Outcome {
