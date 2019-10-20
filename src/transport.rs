@@ -25,15 +25,15 @@ impl Transport for Channel {
             senders.push(sender);
             receivers.push(receiver);
         }
-        let mut transports = vec![];
-        for (i, receiver) in receivers.into_iter().enumerate() {
-            transports.push(Channel {
+        receivers
+            .into_iter()
+            .enumerate()
+            .map(|(i, receiver)| Channel {
                 self_sender: senders[i].clone(),
                 senders: senders.clone(),
                 receiver: receiver,
             })
-        }
-        transports
+            .collect()
     }
 
     fn num_senders(&self) -> usize {
