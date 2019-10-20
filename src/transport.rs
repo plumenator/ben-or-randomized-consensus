@@ -3,6 +3,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use crate::message::Message;
 
 pub trait Transport: Send + Sized {
+    type Wire;
     fn new(num_processes: usize) -> Vec<Self>;
     fn num_senders(&self) -> usize;
     fn send(&self, message: Message);
@@ -17,6 +18,8 @@ pub struct Channel {
 }
 
 impl Transport for Channel {
+    type Wire = Message;
+
     fn new(num_processes: usize) -> Vec<Self> {
         let mut senders = vec![];
         let mut receivers = vec![];
@@ -43,7 +46,7 @@ impl Transport for Channel {
     fn send(&self, message: Message) {
         for sender in &self.senders {
             let _ = sender
-                .send(message.clone())
+                .send(Self::Wire::from(message.clone()))
                 .map_err(|e| eprintln!("Failed to send {:?}", e.0));
         }
     }
@@ -51,11 +54,11 @@ impl Transport for Channel {
     fn send_to_self(&self, message: Message) {
         let _ = self
             .self_sender
-            .send(message.clone())
+            .send(Self::Wire::from(message.clone()))
             .map_err(|e| eprintln!("Failed to send to self {:?}", e.0));
     }
 
     fn receive(&self) -> Message {
-        self.receiver.recv().expect("recv")
+        self.receiver.recv().expect("recv").into()
     }
 }
