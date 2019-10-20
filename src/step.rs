@@ -264,3 +264,19 @@ pub(crate) fn randomly_sends_invalid_messages(
         correct(context, current_phase, current_value, num_adversaries)
     }
 }
+
+pub(crate) fn randomly_stops_executing(
+    context: &Context,
+    current_phase: Phase,
+    current_value: Value,
+    num_adversaries: usize,
+) -> Decision {
+    if rand::random::<bool>() {
+        eprintln!("Process {}: Stopped executing", context.id.0);
+        Decision::Pending {
+            next: current_value,
+        }
+    } else {
+        correct(context, current_phase, current_value, num_adversaries)
+    }
+}
