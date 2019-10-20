@@ -230,3 +230,37 @@ pub(crate) fn randomly_crashes(
         correct(context, current_phase, current_value, num_adversaries)
     }
 }
+
+pub(crate) fn randomly_sends_invalid_messages(
+    context: &Context,
+    current_phase: Phase,
+    current_value: Value,
+    num_adversaries: usize,
+) -> Decision {
+    if rand::random::<bool>() {
+        send(
+            &context.senders,
+            if rand::random::<bool>() {
+                Message::Proposal {
+                    phase: current_phase,
+                    value: if rand::random::<bool>() {
+                        Some(current_value.clone())
+                    } else {
+                        None
+                    },
+                }
+            } else {
+                Message::Report {
+                    phase: current_phase,
+                    value: current_value.clone(),
+                }
+            },
+        );
+        eprintln!("Process {}: Sent random messages", context.id.0);
+        Decision::Pending {
+            next: current_value,
+        }
+    } else {
+        correct(context, current_phase, current_value, num_adversaries)
+    }
+}
