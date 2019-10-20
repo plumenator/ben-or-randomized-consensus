@@ -22,13 +22,13 @@ pub(crate) fn correct(
         "Process {}: send (R, {}, {}) to all processes",
         id.0, current_phase.0, current_value
     );
-    for sender in senders {
-        let report = Message::Report {
+    send(
+        &senders,
+        Message::Report {
             phase: current_phase,
             value: current_value.clone(),
-        };
-        let _ = sender.send(report.clone()).expect("send");
-    }
+        },
+    );
 
     // wait for messages of the form (R, k, *) from n - f
     // processes {"*" can be 0 or 1}
@@ -79,26 +79,26 @@ pub(crate) fn correct(
             "Process {}: then send (P, {}, {}) to all processes",
             id.0, current_phase.0, potential
         );
-        for sender in senders {
-            let proposal = Message::Proposal {
+        send(
+            &senders,
+            Message::Proposal {
                 phase: current_phase,
                 value: Some(potential.clone()),
-            };
-            let _ = sender.send(proposal.clone()).expect("send");
-        }
+            },
+        );
     } else {
         // else send (P, k, ?) to all processes
         eprintln!(
             "Process {}: else send (P, {}, ?) to all processes",
             id.0, current_phase.0
         );
-        for sender in senders {
-            let proposal = Message::Proposal {
+        send(
+            &senders,
+            Message::Proposal {
                 phase: current_phase,
                 value: None,
-            };
-            let _ = sender.send(proposal.clone()).expect("send");
-        }
+            },
+        );
     }
 
     // wait for messages of the form (P, k, *) from n - f
@@ -183,6 +183,12 @@ pub(crate) fn correct(
             id.0, current_phase.0
         );
         Decision::Pending { next }
+    }
+}
+
+fn send(senders: &Vec<std::sync::mpsc::Sender<Message>>, message: Message) {
+    for sender in senders {
+        let _ = sender.send(message.clone()).expect("send");
     }
 }
 
