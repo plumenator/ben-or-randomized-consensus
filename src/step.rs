@@ -1,9 +1,68 @@
+use std::{fmt, str::FromStr};
+
 use crate::{
     message::{Message, Phase, Value},
     outcome::{Context, Decision},
 };
 
-pub(crate) fn correct(
+pub enum Behavior {
+    Correct,
+    Crashes,
+    SendsInvalidMessages,
+    StopsExecuting,
+    RandomlyAdversial,
+}
+
+impl Behavior {
+    pub(crate) fn step_fn(&self) -> impl Fn(&Context, Phase, Value, usize) -> Decision {
+        match self {
+            Behavior::Correct => correct,
+            Behavior::Crashes => randomly_crashes,
+            Behavior::SendsInvalidMessages => randomly_sends_invalid_messages,
+            Behavior::StopsExecuting => randomly_stops_executing,
+            Behavior::RandomlyAdversial => {
+                use rand::seq::SliceRandom;
+                [
+                    randomly_crashes,
+                    randomly_sends_invalid_messages,
+                    randomly_stops_executing,
+                ]
+                .choose(&mut rand::thread_rng())
+                .expect("choose")
+                .clone()
+            }
+        }
+    }
+}
+
+impl fmt::Display for Behavior {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Behavior::Correct => write!(f, "correct",),
+            Behavior::Crashes => write!(f, "crashes",),
+            Behavior::SendsInvalidMessages => write!(f, "sends_invalid_messages",),
+            Behavior::StopsExecuting => write!(f, "stops_executing",),
+            Behavior::RandomlyAdversial => write!(f, "randomly_adversial",),
+        }
+    }
+}
+
+impl FromStr for Behavior {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "correct" => Ok(Behavior::Correct),
+            "crashes" => Ok(Behavior::Crashes),
+            "sends_invalid_messages" => Ok(Behavior::SendsInvalidMessages),
+            "stops_executing" => Ok(Behavior::StopsExecuting),
+            "randomly_adversial" => Ok(Behavior::RandomlyAdversial),
+            _ => Err(String::from("invalid behavior string")),
+        }
+    }
+}
+
+fn correct(
     context: &Context,
     current_phase: Phase,
     current_value: Value,
@@ -218,7 +277,7 @@ fn read_values(
     (ones, zeros)
 }
 
-pub(crate) fn randomly_crashes(
+fn randomly_crashes(
     context: &Context,
     current_phase: Phase,
     current_value: Value,
@@ -231,7 +290,7 @@ pub(crate) fn randomly_crashes(
     }
 }
 
-pub(crate) fn randomly_sends_invalid_messages(
+fn randomly_sends_invalid_messages(
     context: &Context,
     current_phase: Phase,
     current_value: Value,
@@ -265,7 +324,7 @@ pub(crate) fn randomly_sends_invalid_messages(
     }
 }
 
-pub(crate) fn randomly_stops_executing(
+fn randomly_stops_executing(
     context: &Context,
     current_phase: Phase,
     current_value: Value,
