@@ -1,17 +1,14 @@
-use std::{
-    fmt,
-    sync::mpsc::{Receiver, Sender},
-};
+use std::fmt;
 
 use crate::{
-    message::{Message, Phase, Value},
+    message::{Phase, Value},
     outcome::{self, Context, Decision, Outcome},
+    transport::Transport,
 };
 
 pub(crate) struct Process {
     pub(crate) id: Id,
-    pub(crate) senders: Vec<Sender<Message>>,
-    pub(crate) receiver: Receiver<Message>,
+    pub(crate) transport: Transport,
 }
 
 #[derive(Clone)]
@@ -30,19 +27,14 @@ impl Process {
         step_fn: impl Fn(&Context, Phase, Value, usize) -> Decision,
         num_adversaries: usize,
     ) -> impl Iterator<Item = (Id, Outcome)> {
-        let Self {
-            id,
-            senders,
-            receiver,
-        } = self;
+        let Self { id, transport } = self;
         Outcome::generate(
             init,
             Phase::generate(),
             step_fn,
             Context {
                 id: outcome::ProcessId(id.0),
-                senders,
-                receiver,
+                transport,
             },
             num_adversaries,
         )

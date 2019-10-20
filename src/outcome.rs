@@ -1,14 +1,13 @@
-use std::{
-    fmt,
-    sync::mpsc::{Receiver, Sender},
-};
+use std::fmt;
 
-use crate::message::{Message, Phase, Value};
+use crate::{
+    message::{Phase, Value},
+    transport::Transport,
+};
 
 pub(crate) struct Context {
     pub(crate) id: ProcessId,
-    pub(crate) senders: Vec<Sender<Message>>,
-    pub(crate) receiver: Receiver<Message>,
+    pub(crate) transport: Transport,
 }
 
 #[derive(Clone)]
@@ -111,8 +110,7 @@ mod tests {
             step_fn,
             Context {
                 id: ProcessId(0),
-                senders: vec![],
-                receiver: std::sync::mpsc::channel().1,
+                transport: Transport::new(1).remove(0),
             },
             0,
         )

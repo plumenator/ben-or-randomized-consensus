@@ -2,7 +2,8 @@ use std::sync::mpsc::{Receiver, Sender};
 
 use crate::message::Message;
 
-struct Transport {
+pub(crate) struct Transport {
+    self_sender: Sender<Message>,
     senders: Vec<Sender<Message>>,
     receiver: Receiver<Message>,
 }
@@ -19,11 +20,16 @@ impl Transport {
         let mut transports = vec![];
         for (i, receiver) in receivers.into_iter().enumerate() {
             transports.push(Transport {
+                self_sender: senders[i].clone(),
                 senders: senders.clone(),
                 receiver: receiver,
             })
         }
         transports
+    }
+
+    pub(crate) fn num_senders(&self) -> usize {
+        self.senders.len()
     }
 
     pub(crate) fn send(&self, message: Message) {
@@ -32,6 +38,13 @@ impl Transport {
                 .send(message.clone())
                 .map_err(|e| eprintln!("Failed to send {:?}", e.0));
         }
+    }
+
+    pub(crate) fn send_to_self(&self, message: Message) {
+        let _ = self
+            .self_sender
+            .send(message.clone())
+            .map_err(|e| eprintln!("Failed to send to self {:?}", e.0));
     }
 
     pub(crate) fn receive(&self) -> Message {
