@@ -15,7 +15,7 @@ pub(crate) struct Context {
 pub(crate) struct ProcessId(pub(crate) usize);
 
 #[derive(Debug, PartialEq)]
-pub(crate) struct Outcome {
+pub struct Outcome {
     phase: Phase,
     decision: Decision,
 }

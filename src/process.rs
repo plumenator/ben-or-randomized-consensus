@@ -1,4 +1,7 @@
-use std::sync::mpsc::{Receiver, Sender};
+use std::{
+    fmt,
+    sync::mpsc::{Receiver, Sender},
+};
 
 use crate::{
     message::{Message, Phase, Value},
@@ -12,7 +15,13 @@ pub(crate) struct Process {
 }
 
 #[derive(Clone)]
-pub(crate) struct Id(pub(crate) usize);
+pub struct Id(pub(crate) usize);
+
+impl fmt::Display for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl Process {
     pub(crate) fn run(
