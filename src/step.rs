@@ -15,9 +15,7 @@ pub enum Behavior {
 }
 
 impl Behavior {
-    pub(crate) fn step_fn<T: Transport>(
-        &self,
-    ) -> impl Fn(&Context<T>, Phase, Value, usize) -> Decision {
+    pub(crate) fn step_fn(&self) -> impl Fn(&Context, Phase, Value, usize) -> Decision {
         match self {
             Behavior::Correct => correct,
             Behavior::Crashes => randomly_crashes,
@@ -65,8 +63,8 @@ impl FromStr for Behavior {
     }
 }
 
-fn correct<T: Transport>(
-    context: &Context<T>,
+fn correct(
+    context: &Context,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -238,7 +236,7 @@ fn correct<T: Transport>(
 }
 
 fn read_values(
-    transport: &impl Transport,
+    transport: &Box<dyn Transport>,
     take: usize,
     filter_map_fn: impl Fn(Message) -> Option<Option<Value>>,
 ) -> (Vec<Value>, Vec<Value>) {
@@ -259,8 +257,8 @@ fn read_values(
     (ones, zeros)
 }
 
-fn randomly_crashes<T: Transport>(
-    context: &Context<T>,
+fn randomly_crashes(
+    context: &Context,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -272,8 +270,8 @@ fn randomly_crashes<T: Transport>(
     }
 }
 
-fn randomly_sends_invalid_messages<T: Transport>(
-    context: &Context<T>,
+fn randomly_sends_invalid_messages(
+    context: &Context,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,
@@ -303,8 +301,8 @@ fn randomly_sends_invalid_messages<T: Transport>(
     }
 }
 
-fn randomly_stops_executing<T: Transport>(
-    context: &Context<T>,
+fn randomly_stops_executing(
+    context: &Context,
     current_phase: Phase,
     current_value: Value,
     num_adversaries: usize,

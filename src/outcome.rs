@@ -5,9 +5,9 @@ use crate::{
     transport::Transport,
 };
 
-pub(crate) struct Context<T: Transport> {
+pub(crate) struct Context {
     pub(crate) id: ProcessId,
-    pub(crate) transport: T,
+    pub(crate) transport: Box<dyn Transport>,
 }
 
 #[derive(Clone)]
@@ -20,11 +20,11 @@ pub struct Outcome {
 }
 
 impl Outcome {
-    pub(crate) fn generate<T: Transport>(
+    pub(crate) fn generate(
         init: Value,
         phases: impl Iterator<Item = Phase>,
-        step_fn: impl Fn(&Context<T>, Phase, Value, usize) -> Decision,
-        context: Context<T>,
+        step_fn: impl Fn(&Context, Phase, Value, usize) -> Decision,
+        context: Context,
         num_adversaries: usize,
     ) -> impl Iterator<Item = Self> {
         let mut current = Decision::Pending { next: init };
@@ -86,9 +86,9 @@ impl Decision {
 mod tests {
     use super::*;
 
-    use crate::transport::Channel;
+    use crate::transport::MessageChannel;
 
-    fn step_fn(_context: &Context<Channel>, phase: Phase, _value: Value, _: usize) -> Decision {
+    fn step_fn(_context: &Context, phase: Phase, _value: Value, _: usize) -> Decision {
         let next = if phase.0 % 2 == 1 {
             Value::Zero
         } else {
@@ -112,7 +112,7 @@ mod tests {
             step_fn,
             Context {
                 id: ProcessId(0),
-                transport: Channel::new(1).remove(0),
+                transport: MessageChannel::new(1).remove(0),
             },
             0,
         )
