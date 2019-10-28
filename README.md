@@ -11,7 +11,7 @@ $ ./target/debug/ben-or-randomized-consensus
 Error parsing args: need 5 args
 Usage: ./target/debug/ben-or-randomized-consensus <number of nodes> <number of zeros> <number of adversaries> <behavior> <transport type
 behavior: correct|crashes|sends_invalid_messages|stops_executing|randomly_adversial
-transport type: message_channel
+transport type: message_channel|byte_channel
 $ # Simulate 11 nodes, half of them starting at 0, with no adversaries
 $ ./target/debug/ben-or-randomized-consensus 11 5 0 correct message_channel 2>/dev/null
 Process 0: outcome: (Phase: 0, Next: 0)

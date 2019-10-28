@@ -13,13 +13,13 @@ use crate::{
 };
 
 pub use crate::step::Behavior;
-pub use crate::transport::{MessageChannel, Transport};
+pub use crate::transport::{ByteChannel, MessageChannel, Transport};
 
-pub fn simulate<T: Transport + 'static>(
+pub fn simulate(
     num_zeros: usize,
     num_adversaries: usize,
     adversial_behavior: Behavior,
-    transports: Vec<T>,
+    transports: Vec<Box<dyn Transport>>,
 ) -> impl Iterator<Item = (Id, Outcome)> {
     let mut processes = vec![];
     for (i, transport) in transports.into_iter().enumerate() {
