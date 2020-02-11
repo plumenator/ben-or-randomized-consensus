@@ -1,6 +1,10 @@
 Simulator for Ben-Or's Randomized Consensus Algorithm
 =====================================================
 
+The Algorithm
+-------------
+![Ben-Or's Randomized Consensus Algorithm](docs/algorithm.png)
+
 Usage
 -----
 ```bash
