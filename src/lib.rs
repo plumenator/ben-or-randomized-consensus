@@ -18,7 +18,7 @@ pub use crate::transport::{ByteChannel, MessageChannel, Transport};
 pub fn simulate(
     num_zeros: usize,
     num_adversaries: usize,
-    adversial_behavior: Behavior,
+    adversarial_behavior: Behavior,
     transports: Vec<Box<dyn Transport>>,
 ) -> impl Iterator<Item = (Id, Outcome)> {
     let mut processes = vec![];
@@ -39,7 +39,7 @@ pub fn simulate(
             Value::One
         };
         let step_fn = if process.id.0 < num_adversaries {
-            adversial_behavior.step_fn()
+            adversarial_behavior.step_fn()
         } else {
             Behavior::Correct.step_fn()
         };

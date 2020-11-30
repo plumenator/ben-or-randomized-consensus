@@ -14,7 +14,7 @@ $ # Usage
 $ ./target/debug/ben-or-randomized-consensus
 Error parsing args: need 5 args
 Usage: ./target/debug/ben-or-randomized-consensus <number of nodes> <number of zeros> <number of adversaries> <behavior> <transport type
-behavior: correct|crashes|sends_invalid_messages|stops_executing|randomly_adversial
+behavior: correct|crashes|sends_invalid_messages|stops_executing|randomly_adversarial
 transport type: message_channel|byte_channel
 $ # Simulate 11 nodes, half of them starting at 0, with no adversaries
 $ ./target/debug/ben-or-randomized-consensus 11 5 0 correct message_channel 2>/dev/null
@@ -28,7 +28,7 @@ Process 1: outcome: (Phase: 9, Next: 1, Decide: 1)
 ...
 ...
 $ # Simulate 11 nodes, half of them starting at 0, with 5 (n/2) adversaries each with a random adverserial behavior
-$ ./target/debug/ben-or-randomized-consensus 11 5 5 randomly_adversial message_channel 2>/dev/null
+$ ./target/debug/ben-or-randomized-consensus 11 5 5 randomly_adversarial message_channel 2>/dev/null
 Process 0: outcome: (Phase: 0, Next: 0)
 Process 1: outcome: (Phase: 0, Next: 0)
 Process 2: outcome: (Phase: 0, Next: 0)
@@ -39,7 +39,7 @@ Process 0: outcome: (Phase: 9, Next: 1, Decide: 1)
 ...
 ...
 $ # Simulate 11 nodes, half of them starting at 0, with 6 (> n/2) adversaries each with a random adverserial behavior
-$ ./target/debug/ben-or-randomized-consensus 11 6 6 randomly_adversial message_channel 2>/dev/null
+$ ./target/debug/ben-or-randomized-consensus 11 6 6 randomly_adversarial message_channel 2>/dev/null
 Process 1: outcome: (Phase: 0, Next: 0)
 Process 4: outcome: (Phase: 0, Next: 0)
 Process 1: outcome: (Phase: 1, Next: 0)

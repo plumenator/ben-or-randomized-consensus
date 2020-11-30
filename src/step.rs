@@ -11,7 +11,7 @@ pub enum Behavior {
     Crashes,
     SendsInvalidMessages,
     StopsExecuting,
-    RandomlyAdversial,
+    RandomlyAdversarial,
 }
 
 impl Behavior {
@@ -21,7 +21,7 @@ impl Behavior {
             Behavior::Crashes => randomly_crashes,
             Behavior::SendsInvalidMessages => randomly_sends_invalid_messages,
             Behavior::StopsExecuting => randomly_stops_executing,
-            Behavior::RandomlyAdversial => {
+            Behavior::RandomlyAdversarial => {
                 use rand::seq::SliceRandom;
                 [
                     randomly_crashes,
@@ -43,7 +43,7 @@ impl fmt::Display for Behavior {
             Behavior::Crashes => write!(f, "crashes",),
             Behavior::SendsInvalidMessages => write!(f, "sends_invalid_messages",),
             Behavior::StopsExecuting => write!(f, "stops_executing",),
-            Behavior::RandomlyAdversial => write!(f, "randomly_adversial",),
+            Behavior::RandomlyAdversarial => write!(f, "randomly_adversarial",),
         }
     }
 }
@@ -57,7 +57,7 @@ impl FromStr for Behavior {
             "crashes" => Ok(Behavior::Crashes),
             "sends_invalid_messages" => Ok(Behavior::SendsInvalidMessages),
             "stops_executing" => Ok(Behavior::StopsExecuting),
-            "randomly_adversial" => Ok(Behavior::RandomlyAdversial),
+            "randomly_adversarial" => Ok(Behavior::RandomlyAdversarial),
             _ => Err("invalid behavior string"),
         }
     }

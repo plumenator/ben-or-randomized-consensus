@@ -23,7 +23,7 @@ fn main() {
                 bin_name
             );
             eprintln!(
-                "behavior: correct|crashes|sends_invalid_messages|stops_executing|randomly_adversial",
+                "behavior: correct|crashes|sends_invalid_messages|stops_executing|randomly_adversarial",
             );
             eprintln!("transport type: message_channel|byte_channel",);
         }
